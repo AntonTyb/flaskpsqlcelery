@@ -1,0 +1,37 @@
+version: '3'
+services:
+  flask_psql:
+    build:
+      context: backend
+      dockerfile: ../backend/Dockerfile
+    ports:
+      - "443:5000"
+    env_file: .env
+    restart: always
+  worker:
+    build:
+      context: backend
+      dockerfile: ../backend/Dockerfile
+    restart: always
+    env_file: .env
+    command: ["/home/flask_psql/boot_worker.sh"]
+    depends_on:
+      - redis
+  redis:
+    image: redis:7.0.0
+  psql:
+    image: postgres:14.4
+    env_file: .env
+    restart: always
+  frontend:
+    build:
+      context: frontend
+      dockerfile: ../frontend/Dockerfile
+    restart: always
+    ports:
+      - "8080:80"
+    environment:
+      - NGINX_HOST=foobar.com
+      - NGINX_PORT=80
+    depends_on:
+      - flask_psql

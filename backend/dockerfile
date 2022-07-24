@@ -1,0 +1,28 @@
+FROM python:3.7-buster
+
+ENV FLASK_CONFIG production
+ENV FLASK_APP app.py
+#RUN adduser -D flasky
+#USER flasky
+
+WORKDIR /home/flask_psql
+
+COPY requirements requirements
+RUN apt-get update
+RUN apt-get install -y build-essential
+
+
+RUN python -m venv venv
+RUN pip install --upgrade pip
+RUN venv/bin/pip install -r requirements/docker.txt
+
+COPY app ./app
+COPY app.py ./
+COPY boot.sh ./
+COPY boot_worker.sh ./
+COPY celery_worker.py ./
+COPY app.py ./app.py
+
+# run-time configuration
+EXPOSE 5000
+CMD ["./boot.sh"]
